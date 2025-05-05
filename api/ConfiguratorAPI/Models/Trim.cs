@@ -7,6 +7,7 @@ public class Trim
     public string BrandId { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public List<string> Features { get; set; } = new List<string>();
+    public string FeaturesJson { get; set; } = string.Empty;
     public decimal Price { get; set; }
     public decimal ListPrice { get; set; }
     public bool IsActive { get; set; } = true;

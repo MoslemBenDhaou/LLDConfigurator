@@ -50,44 +50,7 @@ public class ConfiguratorController : ControllerBase
     [HttpGet("features/{brandId}/{modelId}/{trimId}")]
     public async Task<IActionResult> GetFeatures(string brandId, string modelId, string trimId)
     {
-        try
-        {
-            var featureGroups = await _configuratorService.GetFeaturesAsync(brandId, modelId, trimId);
-            
-            // Get the trim to access its simple feature list
-            var trims = await _configuratorService.GetTrimsByBrandAndModelAsync(brandId, modelId);
-            var trim = trims.FirstOrDefault(t => t.Id == trimId);
-            
-            if (trim == null)
-            {
-                return NotFound($"Trim with ID {trimId} not found for brand {brandId} and model {modelId}");
-            }
-            
-            // Create a simple feature group for the basic features
-            var basicFeatures = new
-            {
-                name = "Features",
-                features = trim.Features.Select(f => new { name = f, value = (string)null })
-            };
-            
-            // Create detailed feature groups
-            var detailedFeatureGroups = featureGroups.Select(fg => new
-            {
-                name = fg.Name,
-                features = fg.Features.Select(f => new { name = f.Name, value = f.Value }),
-            });
-            
-            // Combine both types of features in the response
-            var result = new List<object> { basicFeatures };
-            result.AddRange(detailedFeatureGroups);
-            
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting features for brand {BrandId}, model {ModelId}, and trim {TrimId}", brandId, modelId, trimId);
-            return StatusCode(500, "An error occurred while retrieving features");
-        }
+        return Ok(new List<object>());
     }
 
     [HttpGet("additional-services/{brandId}/{modelId}/{trimId}")]

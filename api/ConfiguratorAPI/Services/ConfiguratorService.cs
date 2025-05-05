@@ -10,7 +10,6 @@ public interface IConfiguratorService
     Task<List<Model>> GetModelsByBrandAsync(string brandId);
     Task<List<Trim>> GetTrimsByBrandAndModelAsync(string brandId, string modelId);
     Task<List<PricePoint>> GetPricingAsync(string brandId, string modelId, string trimId);
-    Task<List<FeatureGroup>> GetFeaturesAsync(string brandId, string modelId, string trimId);
 }
 
 public class ConfiguratorService : IConfiguratorService
@@ -322,10 +321,4 @@ public class ConfiguratorService : IConfiguratorService
             }
         };
     }
-
-    public Task<List<FeatureGroup>> GetFeaturesAsync(string brandId, string modelId, string trimId)
-    {
-        throw new NotImplementedException();
-    }
-
 }

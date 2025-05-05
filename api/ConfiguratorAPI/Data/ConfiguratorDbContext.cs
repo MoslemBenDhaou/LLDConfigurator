@@ -16,7 +16,6 @@ public class ConfiguratorDbContext : DbContext
     public DbSet<Trim> Trims { get; set; } = null!;
     public DbSet<PriceMatrix> PriceMatrices { get; set; } = null!;
     public DbSet<PricePoint> PricePoints { get; set; } = null!;
-    public DbSet<FeatureGroup> FeatureGroups { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
