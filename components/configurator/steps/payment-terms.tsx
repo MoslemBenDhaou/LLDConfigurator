@@ -1,12 +1,13 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { ConfiguratorData } from "../wizard"
 import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Info } from "lucide-react"
-import { getTrims } from "@/data/offers"
+import { getTrims, getTrimPriceMatrix } from "@/data/offers"
 import { getPriceFromMatrix } from "@/data/price-matrix"
 
 interface PaymentTermsProps {
@@ -15,6 +16,8 @@ interface PaymentTermsProps {
 }
 
 export function PaymentTerms({ data, setData }: PaymentTermsProps) {
+  const [monthlyPrices, setMonthlyPrices] = useState<Record<string, number>>({})
+  
   // Get estimated vehicle list price based on trim
   const getVehicleListPrice = () => {
     // Get the selected trim
@@ -29,6 +32,53 @@ export function PaymentTerms({ data, setData }: PaymentTermsProps) {
 
   const vehicleListPrice = getVehicleListPrice()
 
+  // Load price matrix and calculate prices for all advance options
+  useEffect(() => {
+    if (!data.trim) return
+
+    // Get the selected trim
+    const trims = getTrims(data.brand, data.model)
+    const selectedTrim = trims.find(trim => trim.id === data.trim)
+    
+    if (!selectedTrim) return
+
+    // Get the price matrix for the selected trim
+    const priceMatrix = getTrimPriceMatrix(data.brand, data.model, data.trim)
+    
+    // Update the trim's price matrix if it's empty
+    if (selectedTrim.priceMatrix.length === 0 && priceMatrix.length > 0) {
+      selectedTrim.priceMatrix = priceMatrix
+    }
+    
+    // Calculate monthly prices for all advance options
+    const prices: Record<string, number> = {}
+    
+    // Calculate for each advance percentage option
+    for (const option of [0, 10, 20, 30]) {
+      if (priceMatrix.length > 0) {
+        // Use the price matrix to get the price
+        prices[option] = getPriceFromMatrix(priceMatrix, data.duration, data.kilometers, option)
+      } else {
+        // Fallback calculation if no price matrix is available
+        const basePricePerMonth = selectedTrim.price
+
+        // Base financing amount after first rate is applied
+        const financingAmount = vehicleListPrice * (1 - option / 100)
+
+        // Calculate monthly payment based on financing amount and duration
+        const baseMonthlyPayment = financingAmount / data.duration
+
+        // Apply other adjustments
+        const durationDiscount = Math.min(20, (data.duration - 12) * 0.4)
+        const adjustedMonthlyPayment = baseMonthlyPayment * (1 - durationDiscount / 100)
+
+        prices[option] = Math.round(adjustedMonthlyPayment)
+      }
+    }
+    
+    setMonthlyPrices(prices)
+  }, [data.brand, data.model, data.trim, data.duration, data.kilometers, vehicleListPrice])
+
   const handleFirstRateChange = (value: string) => {
     setData({ ...data, firstRatePercentage: Number.parseInt(value) })
   }
@@ -38,35 +88,9 @@ export function PaymentTerms({ data, setData }: PaymentTermsProps) {
     return Math.round((percentage / 100) * vehicleListPrice)
   }
 
-  // Calculate monthly price based on first rate percentage
+  // Get monthly price based on first rate percentage
   const getMonthlyPrice = (firstRatePercentage: number) => {
-    if (!data.trim) return 0
-
-    // Get the selected trim
-    const trims = getTrims(data.brand, data.model)
-    const selectedTrim = trims.find(trim => trim.id === data.trim)
-    
-    if (!selectedTrim) return 0
-
-    // If the trim has a price matrix, use it to get the price
-    if (selectedTrim.priceMatrix && selectedTrim.priceMatrix.length > 0) {
-      return getPriceFromMatrix(selectedTrim.priceMatrix, data.duration, data.kilometers, firstRatePercentage)
-    }
-
-    // Fallback calculation if no price matrix is available
-    const basePricePerMonth = selectedTrim.price
-
-    // Base financing amount after first rate is applied
-    const financingAmount = vehicleListPrice * (1 - firstRatePercentage / 100)
-
-    // Calculate monthly payment based on financing amount and duration
-    const baseMonthlyPayment = financingAmount / data.duration
-
-    // Apply other adjustments (similar to previous logic)
-    const durationDiscount = Math.min(20, (data.duration - 12) * 0.4)
-    const adjustedMonthlyPayment = baseMonthlyPayment * (1 - durationDiscount / 100)
-
-    return Math.round(adjustedMonthlyPayment)
+    return monthlyPrices[firstRatePercentage] || 0
   }
 
   // Format number with thousand separators and 3 decimal places

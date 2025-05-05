@@ -17,12 +17,30 @@ export type Model = {
 
 export type TrimFeature = string;
 
+// Types for detailed features
+export type FeatureDetail = {
+  name: string;
+  value: string;
+};
+
+export type FeatureGroup = {
+  name: string;
+  features: FeatureDetail[];
+};
+
 import { PriceMatrix } from "./price-matrix";
+// Import the pricing utilities
+import { loadPriceMatrix, getPriceMatrix } from "./pricing/pricing-loader";
+import { PricingReference } from "./pricing/pricing-manager";
+// Import the features utilities
+import { loadDetailedFeatures, getDetailedFeatures } from "./features/features-loader";
+import { FeaturesReference } from "./features/features-manager";
 
 export type Trim = {
   id: string;
   name: string;
-  features: TrimFeature[];
+  features: TrimFeature[]; // Simple features list for overview
+  detailedFeatures?: FeatureGroup[]; // Detailed features grouped by category
   price: number; // Base price (starting from)
   listPrice: number; // Full list price of the vehicle
   priceMatrix: PriceMatrix; // Price matrix for different duration/km combinations
@@ -56,144 +74,10 @@ export const carData = [
               "Parking Sensors",
               "Cruise Control",
             ],
+            detailedFeatures: [], // Empty detailed features, will be loaded dynamically
             price: 449,
             listPrice: 198000,
-            priceMatrix: [
-              // 12 months
-              {
-                duration: 12,
-                kilometers: 10000,
-                prices: { advance0: 449, advance10: 425, advance20: 405, advance30: 385 }
-              },
-              {
-                duration: 12,
-                kilometers: 15000,
-                prices: { advance0: 469, advance10: 445, advance20: 425, advance30: 405 }
-              },
-              {
-                duration: 12,
-                kilometers: 20000,
-                prices: { advance0: 489, advance10: 465, advance20: 445, advance30: 425 }
-              },
-              {
-                duration: 12,
-                kilometers: 25000,
-                prices: { advance0: 509, advance10: 485, advance20: 465, advance30: 445 }
-              },
-              {
-                duration: 12,
-                kilometers: 30000,
-                prices: { advance0: 529, advance10: 505, advance20: 485, advance30: 465 }
-              },
-              
-              // 24 months
-              {
-                duration: 24,
-                kilometers: 20000,
-                prices: { advance0: 429, advance10: 405, advance20: 385, advance30: 365 }
-              },
-              {
-                duration: 24,
-                kilometers: 30000,
-                prices: { advance0: 449, advance10: 425, advance20: 405, advance30: 385 }
-              },
-              {
-                duration: 24,
-                kilometers: 40000,
-                prices: { advance0: 469, advance10: 445, advance20: 425, advance30: 405 }
-              },
-              {
-                duration: 24,
-                kilometers: 50000,
-                prices: { advance0: 489, advance10: 465, advance20: 445, advance30: 425 }
-              },
-              {
-                duration: 24,
-                kilometers: 60000,
-                prices: { advance0: 509, advance10: 485, advance20: 465, advance30: 445 }
-              },
-              
-              // 36 months
-              {
-                duration: 36,
-                kilometers: 30000,
-                prices: { advance0: 409, advance10: 385, advance20: 365, advance30: 345 }
-              },
-              {
-                duration: 36,
-                kilometers: 45000,
-                prices: { advance0: 429, advance10: 405, advance20: 385, advance30: 365 }
-              },
-              {
-                duration: 36,
-                kilometers: 60000,
-                prices: { advance0: 449, advance10: 425, advance20: 405, advance30: 385 }
-              },
-              {
-                duration: 36,
-                kilometers: 75000,
-                prices: { advance0: 469, advance10: 445, advance20: 425, advance30: 405 }
-              },
-              {
-                duration: 36,
-                kilometers: 90000,
-                prices: { advance0: 489, advance10: 465, advance20: 445, advance30: 425 }
-              },
-              
-              // 48 months
-              {
-                duration: 48,
-                kilometers: 40000,
-                prices: { advance0: 389, advance10: 365, advance20: 345, advance30: 325 }
-              },
-              {
-                duration: 48,
-                kilometers: 60000,
-                prices: { advance0: 409, advance10: 385, advance20: 365, advance30: 345 }
-              },
-              {
-                duration: 48,
-                kilometers: 80000,
-                prices: { advance0: 429, advance10: 405, advance20: 385, advance30: 365 }
-              },
-              {
-                duration: 48,
-                kilometers: 100000,
-                prices: { advance0: 449, advance10: 425, advance20: 405, advance30: 385 }
-              },
-              {
-                duration: 48,
-                kilometers: 120000,
-                prices: { advance0: 469, advance10: 445, advance20: 425, advance30: 405 }
-              },
-              
-              // 60 months
-              {
-                duration: 60,
-                kilometers: 50000,
-                prices: { advance0: 369, advance10: 345, advance20: 325, advance30: 305 }
-              },
-              {
-                duration: 60,
-                kilometers: 75000,
-                prices: { advance0: 389, advance10: 365, advance20: 345, advance30: 325 }
-              },
-              {
-                duration: 60,
-                kilometers: 100000,
-                prices: { advance0: 409, advance10: 385, advance20: 365, advance30: 345 }
-              },
-              {
-                duration: 60,
-                kilometers: 125000,
-                prices: { advance0: 429, advance10: 405, advance20: 385, advance30: 365 }
-              },
-              {
-                duration: 60,
-                kilometers: 150000,
-                prices: { advance0: 449, advance10: 425, advance20: 405, advance30: 385 }
-              }
-            ],
+            priceMatrix: [], // Empty price matrix, will be loaded dynamically
             isActive: true,
           }
         ]
@@ -217,238 +101,72 @@ export const carData = [
               "Parking Sensors",
               "Cruise Control",
             ],
+            detailedFeatures: [], // Empty detailed features, will be loaded dynamically
             price: 499,
             listPrice: 265000,
-            priceMatrix: [
-              // 12 months
-              {
-                duration: 12,
-                kilometers: 10000,
-                prices: { advance0: 499, advance10: 475, advance20: 455, advance30: 435 }
-              },
-              {
-                duration: 12,
-                kilometers: 15000,
-                prices: { advance0: 519, advance10: 495, advance20: 475, advance30: 455 }
-              },
-              {
-                duration: 12,
-                kilometers: 20000,
-                prices: { advance0: 539, advance10: 515, advance20: 495, advance30: 475 }
-              },
-              {
-                duration: 12,
-                kilometers: 25000,
-                prices: { advance0: 559, advance10: 535, advance20: 515, advance30: 495 }
-              },
-              {
-                duration: 12,
-                kilometers: 30000,
-                prices: { advance0: 579, advance10: 555, advance20: 535, advance30: 515 }
-              },
-              
-              // 24 months
-              {
-                duration: 24,
-                kilometers: 20000,
-                prices: { advance0: 479, advance10: 455, advance20: 435, advance30: 415 }
-              },
-              {
-                duration: 24,
-                kilometers: 30000,
-                prices: { advance0: 499, advance10: 475, advance20: 455, advance30: 435 }
-              },
-              {
-                duration: 24,
-                kilometers: 40000,
-                prices: { advance0: 519, advance10: 495, advance20: 475, advance30: 455 }
-              },
-              {
-                duration: 24,
-                kilometers: 50000,
-                prices: { advance0: 539, advance10: 515, advance20: 495, advance30: 475 }
-              },
-              {
-                duration: 24,
-                kilometers: 60000,
-                prices: { advance0: 559, advance10: 535, advance20: 515, advance30: 495 }
-              },
-              
-              // 36 months
-              {
-                duration: 36,
-                kilometers: 30000,
-                prices: { advance0: 459, advance10: 435, advance20: 415, advance30: 395 }
-              },
-              {
-                duration: 36,
-                kilometers: 45000,
-                prices: { advance0: 479, advance10: 455, advance20: 435, advance30: 415 }
-              },
-              {
-                duration: 36,
-                kilometers: 60000,
-                prices: { advance0: 499, advance10: 475, advance20: 455, advance30: 435 }
-              },
-              {
-                duration: 36,
-                kilometers: 75000,
-                prices: { advance0: 519, advance10: 495, advance20: 475, advance30: 455 }
-              },
-              {
-                duration: 36,
-                kilometers: 90000,
-                prices: { advance0: 539, advance10: 515, advance20: 495, advance30: 475 }
-              },
-              
-              // 48 months
-              {
-                duration: 48,
-                kilometers: 40000,
-                prices: { advance0: 439, advance10: 415, advance20: 395, advance30: 375 }
-              },
-              {
-                duration: 48,
-                kilometers: 60000,
-                prices: { advance0: 459, advance10: 435, advance20: 415, advance30: 395 }
-              },
-              {
-                duration: 48,
-                kilometers: 80000,
-                prices: { advance0: 479, advance10: 455, advance20: 435, advance30: 415 }
-              },
-              {
-                duration: 48,
-                kilometers: 100000,
-                prices: { advance0: 499, advance10: 475, advance20: 455, advance30: 435 }
-              },
-              {
-                duration: 48,
-                kilometers: 120000,
-                prices: { advance0: 519, advance10: 495, advance20: 475, advance30: 455 }
-              },
-              
-              // 60 months
-              {
-                duration: 60,
-                kilometers: 50000,
-                prices: { advance0: 419, advance10: 395, advance20: 375, advance30: 355 }
-              },
-              {
-                duration: 60,
-                kilometers: 75000,
-                prices: { advance0: 439, advance10: 415, advance20: 395, advance30: 375 }
-              },
-              {
-                duration: 60,
-                kilometers: 100000,
-                prices: { advance0: 459, advance10: 435, advance20: 415, advance30: 395 }
-              },
-              {
-                duration: 60,
-                kilometers: 125000,
-                prices: { advance0: 479, advance10: 455, advance20: 435, advance30: 415 }
-              },
-              {
-                duration: 60,
-                kilometers: 150000,
-                prices: { advance0: 499, advance10: 475, advance20: 455, advance30: 435 }
-              }
-            ],
+            priceMatrix: [], // Empty price matrix, will be loaded dynamically
             isActive: true,
           }
         ]
       }
     ]
   },
-  {
-    id: "audi",
-    name: "Audi",
-    logo: "/brands/audi.webp",
-    isActive: true,
+  { 
+    id: "audi", 
+    name: "Audi", 
+    logo: "/brands/audi.webp", 
+    isActive: true, 
     models: [
       {
-        id: "a3",
-        name: "A3",
-        image: "/models/audi/a3.webp",
+        id: "a3-berline",
+        name: "A3 Berline",
+        image: "/models/audi/a3-berline.webp",
         isActive: true,
         trims: [
           {
-            id: "basic",
-            name: "Basic",
-            features: ["Air Conditioning", "Power Windows", "Bluetooth"],
-            price: 299,
-            listPrice: 32000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          },
-          {
-            id: "comfort",
-            name: "Comfort",
-            features: ["Air Conditioning", "Power Windows", "Bluetooth", "Parking Sensors", "Cruise Control"],
-            price: 349,
-            listPrice: 38000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          },
-          {
-            id: "premium",
-            name: "Premium",
+            id: "35-tfsi-business-extended",
+            name: "35 TFSI Business Extended",
             features: [
-              "Air Conditioning",
-              "Power Windows",
-              "Bluetooth",
-              "Parking Sensors",
-              "Cruise Control",
-              "Leather Seats",
-              "Navigation System",
+              "1.5L TFSI Engine",
+              "150 ch",
+              "Manual 6-Speed Transmission",
+              "Front-Wheel Drive",
+              "MMI Navigation System",
+              "Audi Virtual Cockpit",
+              "Dual-Zone Climate Control",
+              "Parking Sensors"
             ],
-            price: 399,
-            listPrice: 45000,
-            priceMatrix: [], // Empty price matrix
+            detailedFeatures: [], // Empty detailed features, will be loaded dynamically
+            price: 349,
+            listPrice: 145000,
+            priceMatrix: [], // Empty price matrix, will be loaded dynamically
             isActive: true,
           }
         ]
       },
       {
-        id: "a4",
-        name: "A4",
-        image: "/models/audi/a4.webp",
+        id: "q2",
+        name: "Q2",
+        image: "/models/audi/q2.webp",
         isActive: true,
         trims: [
           {
-            id: "basic",
-            name: "Basic",
-            features: ["Air Conditioning", "Power Windows", "Bluetooth"],
-            price: 299,
-            listPrice: 32000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          },
-          {
-            id: "comfort",
-            name: "Comfort",
-            features: ["Air Conditioning", "Power Windows", "Bluetooth", "Parking Sensors", "Cruise Control"],
-            price: 349,
-            listPrice: 38000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          },
-          {
-            id: "premium",
-            name: "Premium",
+            id: "35-tfsi-s-line-bva",
+            name: "35 TFSI S-Line BVA",
             features: [
-              "Air Conditioning",
-              "Power Windows",
-              "Bluetooth",
-              "Parking Sensors",
-              "Cruise Control",
-              "Leather Seats",
-              "Navigation System",
+              "1.5L TFSI Engine",
+              "150 ch",
+              "S tronic 7-Speed Transmission",
+              "Front-Wheel Drive",
+              "S Line Exterior Package",
+              "MMI Navigation System",
+              "Sport Seats",
+              "Parking Sensors"
             ],
-            price: 399,
-            listPrice: 45000,
-            priceMatrix: [], // Empty price matrix
+            detailedFeatures: [], // Empty detailed features, will be loaded dynamically
+            price: 379,
+            listPrice: 159000,
+            priceMatrix: [], // Empty price matrix, will be loaded dynamically
             isActive: true,
           }
         ]
@@ -460,361 +178,191 @@ export const carData = [
         isActive: true,
         trims: [
           {
-            id: "basic",
-            name: "Basic",
-            features: ["Air Conditioning", "Power Windows", "Bluetooth"],
-            price: 299,
-            listPrice: 32000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          },
-          {
-            id: "comfort",
-            name: "Comfort",
-            features: ["Air Conditioning", "Power Windows", "Bluetooth", "Parking Sensors", "Cruise Control"],
-            price: 349,
-            listPrice: 38000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          },
-          {
-            id: "premium",
-            name: "Premium",
+            id: "35-tfsi-advanced-line-s-tronic",
+            name: "35 TFSI Advanced Line S-tronic",
             features: [
-              "Air Conditioning",
-              "Power Windows",
-              "Bluetooth",
-              "Parking Sensors",
-              "Cruise Control",
-              "Leather Seats",
-              "Navigation System",
+              "1.5L TFSI Engine",
+              "150 ch",
+              "S tronic 7-Speed Transmission",
+              "Front-Wheel Drive",
+              "MMI Navigation Plus",
+              "Audi Virtual Cockpit",
+              "Three-Zone Climate Control",
+              "Parking Sensors"
             ],
-            price: 399,
-            listPrice: 45000,
-            priceMatrix: [], // Empty price matrix
+            detailedFeatures: [], // Empty detailed features, will be loaded dynamically
+            price: 459,
+            listPrice: 207000,
+            priceMatrix: [], // Empty price matrix, will be loaded dynamically
             isActive: true,
           }
         ]
       },
       {
-        id: "q5",
-        name: "Q5",
-        image: "/models/audi/q5.webp",
+        id: "q3-sportback",
+        name: "Q3 Sportback",
+        image: "/models/audi/q3-sportback.webp",
         isActive: true,
         trims: [
           {
-            id: "basic",
-            name: "Basic",
-            features: ["Air Conditioning", "Power Windows", "Bluetooth"],
-            price: 299,
-            listPrice: 32000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          },
-          {
-            id: "comfort",
-            name: "Comfort",
-            features: ["Air Conditioning", "Power Windows", "Bluetooth", "Parking Sensors", "Cruise Control"],
-            price: 349,
-            listPrice: 38000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          },
-          {
-            id: "premium",
-            name: "Premium",
+            id: "35-tfsi-business-limited-s-tronic",
+            name: "35 TFSI Business Limited S-tronic",
             features: [
-              "Air Conditioning",
-              "Power Windows",
-              "Bluetooth",
-              "Parking Sensors",
-              "Cruise Control",
-              "Leather Seats",
-              "Navigation System",
+              "1.5L TFSI Engine",
+              "150 ch",
+              "S tronic 7-Speed Transmission",
+              "Front-Wheel Drive",
+              "MMI Navigation Plus",
+              "Audi Virtual Cockpit",
+              "Panoramic Sunroof",
+              "Parking Sensors"
             ],
-            price: 399,
-            listPrice: 45000,
-            priceMatrix: [], // Empty price matrix
+            detailedFeatures: [], // Empty detailed features, will be loaded dynamically
+            price: 489,
+            listPrice: 225000,
+            priceMatrix: [], // Empty price matrix, will be loaded dynamically
+            isActive: true,
+          }
+        ]
+      },
+      {
+        id: "q8-e-tron",
+        name: "Q8 e-tron",
+        image: "/models/audi/q8-e-tron.webp",
+        isActive: true,
+        trims: [
+          {
+            id: "55-e-quattro-advanced-line",
+            name: "55 e-quattro Advanced Line",
+            features: [
+              "Electric Motor",
+              "408 ch",
+              "Quattro All-Wheel Drive",
+              "106 kWh Battery",
+              "Up to 582 km Range (WLTP)",
+              "MMI Navigation Plus",
+              "Audi Virtual Cockpit",
+              "Leather Seats"
+            ],
+            detailedFeatures: [], // Empty detailed features, will be loaded dynamically
+            price: 739,
+            listPrice: 299000,
+            priceMatrix: [], // Empty price matrix, will be loaded dynamically
+            isActive: true,
+          }
+        ]
+      },
+      {
+        id: "q8-sportback-e-tron",
+        name: "Q8 Sportback e-tron",
+        image: "/models/audi/q8-sportback-e-tron.webp",
+        isActive: true,
+        trims: [
+          {
+            id: "55-e-quattro-s-line",
+            name: "55 e-quattro S-line",
+            features: [
+              "Electric Motor",
+              "408 ch",
+              "Quattro All-Wheel Drive",
+              "106 kWh Battery",
+              "Up to 600 km Range (WLTP)",
+              "S Line Exterior Package",
+              "Sport Seats",
+              "21-inch Alloy Wheels"
+            ],
+            detailedFeatures: [], // Empty detailed features, will be loaded dynamically
+            price: 839,
+            listPrice: 349000,
+            priceMatrix: [], // Empty price matrix, will be loaded dynamically
+            isActive: true,
+          }
+        ]
+      },
+      {
+        id: "e-tron-gt",
+        name: "e-tron GT",
+        image: "/models/audi/e-tron-gt.webp",
+        isActive: true,
+        trims: [
+          {
+            id: "quattro",
+            name: "quattro",
+            features: [
+              "Electric Motor",
+              "476 ch (530 ch in boost)",
+              "Quattro All-Wheel Drive",
+              "93.4 kWh Battery",
+              "Up to 488 km Range (WLTP)",
+              "MMI Navigation Plus",
+              "Audi Virtual Cockpit",
+              "Panoramic Glass Roof"
+            ],
+            detailedFeatures: [], // Empty detailed features, will be loaded dynamically
+            price: 939,
+            listPrice: 360000,
+            priceMatrix: [], // Empty price matrix, will be loaded dynamically
+            isActive: true,
+          }
+        ]
+      },
+      {
+        id: "q7",
+        name: "Q7",
+        image: "/models/audi/q7.webp",
+        isActive: true,
+        trims: [
+          {
+            id: "45-tfsi-quattro-2025-s-line-7-places-bva",
+            name: "45 TFSI Quattro 2025 S-Line 7 places BVA",
+            features: [
+              "3.0L V6 TFSI Engine",
+              "340 ch",
+              "Tiptronic 8-Speed Transmission",
+              "Quattro All-Wheel Drive",
+              "7-Seat Configuration",
+              "S Line Exterior & Interior Package",
+              "Adaptive Air Suspension",
+              "MMI Navigation Plus"
+            ],
+            detailedFeatures: [], // Empty detailed features, will be loaded dynamically
+            price: 1039,
+            listPrice: 449000,
+            priceMatrix: [], // Empty price matrix, will be loaded dynamically
+            isActive: true,
+          }
+        ]
+      },
+      {
+        id: "q8",
+        name: "Q8",
+        image: "/models/audi/q8.webp",
+        isActive: true,
+        trims: [
+          {
+            id: "55-tfsi-quattro",
+            name: "55 TFSI Quattro",
+            features: [
+              "3.0L V6 TFSI Engine",
+              "340 ch",
+              "Tiptronic 8-Speed Transmission",
+              "Quattro All-Wheel Drive",
+              "Adaptive Air Suspension",
+              "MMI Navigation Plus",
+              "Audi Virtual Cockpit",
+              "Panoramic Sunroof"
+            ],
+            detailedFeatures: [], // Empty detailed features, will be loaded dynamically
+            price: 1139,
+            listPrice: 499000,
+            priceMatrix: [], // Empty price matrix, will be loaded dynamically
             isActive: true,
           }
         ]
       }
     ]
   },
-  {
-    id: "bmw",
-    name: "BMW",
-    logo: "/brands/bmw.webp",
-    isActive: true,
-    models: [
-      {
-        id: "3series",
-        name: "3 Series",
-        image: "/models/bmw/3series.webp",
-        isActive: true,
-        trims: [
-          {
-            id: "basic",
-            name: "Basic",
-            features: ["Air Conditioning", "Power Windows", "Bluetooth"],
-            price: 299,
-            listPrice: 32000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          },
-          {
-            id: "comfort",
-            name: "Comfort",
-            features: ["Air Conditioning", "Power Windows", "Bluetooth", "Parking Sensors", "Cruise Control"],
-            price: 349,
-            listPrice: 38000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          },
-          {
-            id: "premium",
-            name: "Premium",
-            features: [
-              "Air Conditioning",
-              "Power Windows",
-              "Bluetooth",
-              "Parking Sensors",
-              "Cruise Control",
-              "Leather Seats",
-              "Navigation System",
-            ],
-            price: 399,
-            listPrice: 45000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          }
-        ]
-      },
-      {
-        id: "5series",
-        name: "5 Series",
-        image: "/models/bmw/5series.webp",
-        isActive: true,
-        trims: [
-          {
-            id: "basic",
-            name: "Basic",
-            features: ["Air Conditioning", "Power Windows", "Bluetooth"],
-            price: 299,
-            listPrice: 32000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          },
-          {
-            id: "comfort",
-            name: "Comfort",
-            features: ["Air Conditioning", "Power Windows", "Bluetooth", "Parking Sensors", "Cruise Control"],
-            price: 349,
-            listPrice: 38000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          },
-          {
-            id: "premium",
-            name: "Premium",
-            features: [
-              "Air Conditioning",
-              "Power Windows",
-              "Bluetooth",
-              "Parking Sensors",
-              "Cruise Control",
-              "Leather Seats",
-              "Navigation System",
-            ],
-            price: 399,
-            listPrice: 45000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          }
-        ]
-      },
-      {
-        id: "x3",
-        name: "X3",
-        image: "/models/bmw/x3.webp",
-        isActive: true,
-        trims: [
-          {
-            id: "basic",
-            name: "Basic",
-            features: ["Air Conditioning", "Power Windows", "Bluetooth"],
-            price: 299,
-            listPrice: 32000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          },
-          {
-            id: "comfort",
-            name: "Comfort",
-            features: ["Air Conditioning", "Power Windows", "Bluetooth", "Parking Sensors", "Cruise Control"],
-            price: 349,
-            listPrice: 38000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          },
-          {
-            id: "premium",
-            name: "Premium",
-            features: [
-              "Air Conditioning",
-              "Power Windows",
-              "Bluetooth",
-              "Parking Sensors",
-              "Cruise Control",
-              "Leather Seats",
-              "Navigation System",
-            ],
-            price: 399,
-            listPrice: 45000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          }
-        ]
-      }
-    ]
-  },
-  {
-    id: "mercedes",
-    name: "Mercedes",
-    logo: "/brands/mercedes.webp",
-    isActive: true,
-    models: [
-      {
-        id: "cclass",
-        name: "C-Class",
-        image: "/models/mercedes/cclass.webp",
-        isActive: true,
-        trims: [
-          {
-            id: "basic",
-            name: "Basic",
-            features: ["Air Conditioning", "Power Windows", "Bluetooth"],
-            price: 299,
-            listPrice: 32000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          },
-          {
-            id: "comfort",
-            name: "Comfort",
-            features: ["Air Conditioning", "Power Windows", "Bluetooth", "Parking Sensors", "Cruise Control"],
-            price: 349,
-            listPrice: 38000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          },
-          {
-            id: "premium",
-            name: "Premium",
-            features: [
-              "Air Conditioning",
-              "Power Windows",
-              "Bluetooth",
-              "Parking Sensors",
-              "Cruise Control",
-              "Leather Seats",
-              "Navigation System",
-            ],
-            price: 399,
-            listPrice: 45000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          }
-        ]
-      },
-      {
-        id: "eclass",
-        name: "E-Class",
-        image: "/models/mercedes/eclass.webp",
-        isActive: true,
-        trims: [
-          {
-            id: "basic",
-            name: "Basic",
-            features: ["Air Conditioning", "Power Windows", "Bluetooth"],
-            price: 299,
-            listPrice: 32000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          },
-          {
-            id: "comfort",
-            name: "Comfort",
-            features: ["Air Conditioning", "Power Windows", "Bluetooth", "Parking Sensors", "Cruise Control"],
-            price: 349,
-            listPrice: 38000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          },
-          {
-            id: "premium",
-            name: "Premium",
-            features: [
-              "Air Conditioning",
-              "Power Windows",
-              "Bluetooth",
-              "Parking Sensors",
-              "Cruise Control",
-              "Leather Seats",
-              "Navigation System",
-            ],
-            price: 399,
-            listPrice: 45000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          }
-        ]
-      },
-      {
-        id: "glc",
-        name: "GLC",
-        image: "/models/mercedes/glc.webp",
-        isActive: true,
-        trims: [
-          {
-            id: "basic",
-            name: "Basic",
-            features: ["Air Conditioning", "Power Windows", "Bluetooth"],
-            price: 299,
-            listPrice: 32000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          },
-          {
-            id: "comfort",
-            name: "Comfort",
-            features: ["Air Conditioning", "Power Windows", "Bluetooth", "Parking Sensors", "Cruise Control"],
-            price: 349,
-            listPrice: 38000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          },
-          {
-            id: "premium",
-            name: "Premium",
-            features: [
-              "Air Conditioning",
-              "Power Windows",
-              "Bluetooth",
-              "Parking Sensors",
-              "Cruise Control",
-              "Leather Seats",
-              "Navigation System",
-            ],
-            price: 399,
-            listPrice: 45000,
-            priceMatrix: [], // Empty price matrix
-            isActive: true,
-          }
-        ]
-      }
-    ]
-  },
+  { id: "bmw", name: "BMW", logo: "/brands/bmw.webp", isActive: true },
   { id: "byd", name: "BYD", logo: "/brands/byd.webp", isActive: true },
   { id: "chery", name: "Chery", logo: "/brands/chery.webp", isActive: true },
   { id: "chevrolet", name: "Chevrolet", logo: "/brands/chevrolet.webp", isActive: true },
@@ -831,6 +379,7 @@ export const carData = [
   { id: "kia", name: "Kia", logo: "/brands/kia.webp", isActive: true },
   { id: "landrover", name: "Land Rover", logo: "/brands/landrover.webp", isActive: true },
   { id: "mahindra", name: "Mahindra", logo: "/brands/mahindra.webp", isActive: true },
+  { id: "mercedes", name: "Mercedes", logo: "/brands/mercedes.webp", isActive: true },
   { id: "mg", name: "MG", logo: "/brands/mg.webp", isActive: true },
   { id: "mini", name: "Mini", logo: "/brands/mini.webp", isActive: true },
   { id: "mitsubishi", name: "Mitsubishi", logo: "/brands/mitsubishi.webp", isActive: true },
@@ -855,18 +404,20 @@ export const defaultTrims: Trim[] = [
     id: "basic",
     name: "Basic",
     features: ["Air Conditioning", "Power Windows", "Bluetooth"],
+    detailedFeatures: [], // Empty detailed features, will be loaded dynamically
     price: 299,
     listPrice: 32000,
-    priceMatrix: [], // Empty price matrix
+    priceMatrix: [], // Empty price matrix, will be loaded dynamically
     isActive: true,
   },
   {
     id: "comfort",
     name: "Comfort",
     features: ["Air Conditioning", "Power Windows", "Bluetooth", "Parking Sensors", "Cruise Control"],
+    detailedFeatures: [], // Empty detailed features, will be loaded dynamically
     price: 349,
     listPrice: 38000,
-    priceMatrix: [], // Empty price matrix
+    priceMatrix: [], // Empty price matrix, will be loaded dynamically
     isActive: true,
   },
   {
@@ -881,9 +432,10 @@ export const defaultTrims: Trim[] = [
       "Leather Seats",
       "Navigation System",
     ],
+    detailedFeatures: [], // Empty detailed features, will be loaded dynamically
     price: 399,
     listPrice: 45000,
-    priceMatrix: [], // Empty price matrix
+    priceMatrix: [], // Empty price matrix, will be loaded dynamically
     isActive: true,
   },
 ];
@@ -902,4 +454,86 @@ export const getTrims = (brandId: string, modelId: string): Trim[] => {
   const brand = carData.find(b => b.id === brandId);
   const model = brand?.models?.find(m => m.id === modelId);
   return model?.trims?.filter(trim => trim.isActive) || defaultTrims;
+};
+
+// Function to load price matrix for a trim
+export const loadTrimPriceMatrix = async (brandId: string, modelId: string, trimId: string): Promise<PriceMatrix> => {
+  const ref: PricingReference = { brandId, modelId, trimId };
+  return await loadPriceMatrix(ref);
+};
+
+// Function to get price matrix for a trim (synchronous, from cache)
+export const getTrimPriceMatrix = (brandId: string, modelId: string, trimId: string): PriceMatrix => {
+  const ref: PricingReference = { brandId, modelId, trimId };
+  return getPriceMatrix(ref);
+};
+
+// Function to load detailed features for a trim
+export const loadTrimDetailedFeatures = async (brandId: string, modelId: string, trimId: string): Promise<FeatureGroup[]> => {
+  const ref: FeaturesReference = { brandId, modelId, trimId };
+  return await loadDetailedFeatures(ref);
+};
+
+// Function to get detailed features for a trim (synchronous, from cache)
+export const getTrimDetailedFeatures = (brandId: string, modelId: string, trimId: string): FeatureGroup[] => {
+  const ref: FeaturesReference = { brandId, modelId, trimId };
+  return getDetailedFeatures(ref);
+};
+
+// Function to preload all price matrices and detailed features for active trims
+export const preloadAllData = async (): Promise<void> => {
+  const refs: PricingReference[] = [];
+  const featureRefs: FeaturesReference[] = [];
+  
+  // Add references for all active trims
+  carData.forEach(brand => {
+    if (!brand.isActive) return;
+    
+    brand.models?.forEach(model => {
+      if (!model.isActive) return;
+      
+      model.trims?.forEach(trim => {
+        if (!trim.isActive) return;
+        
+        refs.push({
+          brandId: brand.id,
+          modelId: model.id,
+          trimId: trim.id
+        });
+        
+        featureRefs.push({
+          brandId: brand.id,
+          modelId: model.id,
+          trimId: trim.id
+        });
+      });
+    });
+  });
+  
+  // Add references for default trims
+  defaultTrims.forEach(trim => {
+    if (!trim.isActive) return;
+    
+    refs.push({
+      brandId: 'default',
+      modelId: 'default',
+      trimId: trim.id
+    });
+    
+    featureRefs.push({
+      brandId: 'default',
+      modelId: 'default',
+      trimId: trim.id
+    });
+  });
+  
+  // Preload all price matrices and detailed features
+  await Promise.all([
+    import('./pricing/pricing-loader').then(loader => 
+      loader.preloadPriceMatrices(refs)
+    ),
+    import('./features/features-loader').then(loader => 
+      loader.preloadDetailedFeatures(featureRefs)
+    )
+  ]);
 };

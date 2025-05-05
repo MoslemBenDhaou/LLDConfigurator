@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Nunito } from 'next/font/google'
 import './globals.css'
+import { PricingLoader } from '@/components/pricing-loader'
 
 // Initialize the Nunito font with Latin subset
 const nunito = Nunito({
@@ -21,7 +22,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={nunito.className}>
-      <body>{children}</body>
+      <body>
+        <PricingLoader>
+          {children}
+        </PricingLoader>
+      </body>
     </html>
   )
 }
