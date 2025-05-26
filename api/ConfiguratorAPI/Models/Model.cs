@@ -2,9 +2,10 @@ namespace ConfiguratorAPI.Models;
 
 public class Model
 {
-    public string Id { get; set; } = string.Empty;
-    public string BrandId { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
-    public string Image { get; set; } = string.Empty;
+    public string Code { get; set; }
+    public string Name { get; set; }
+    public string ImgUrl { get; set; } // Vehicle or model image
+    public Brand Brand { get; set; }
+    public List<Trim> Trims { get; set; } = new();
     public bool IsActive { get; set; } = true;
 }
