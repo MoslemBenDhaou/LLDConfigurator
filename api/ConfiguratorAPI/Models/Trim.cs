@@ -4,12 +4,14 @@ namespace ConfiguratorAPI.Models;
 
 public class Trim
 {
-    public string Name { get; set; }
-    public Model Model { get; set; }
+    public string TrimCode { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string ModelCode { get; set; } = string.Empty; // Foreign key
+    public Model? Model { get; set; }
     public int FiscalPower { get; set; }
 
     // Highlighted features
-    public int EnginePowerKW { get; set; }
+    public int Seats { get; set; }
     public int CylinderCount { get; set; }
     public int HorsePower { get; set; }
     public FuelType FuelType { get; set; }
@@ -26,6 +28,7 @@ public class Trim
     public decimal FullInsurance4PercentPrice { get; set; } 
     public decimal MaintenancePackagePrice { get; set; }
     public decimal VignettesPrice => ComputeVignettesPrice();
+    public int MaxDurationMonths => FiscalPower <= 5 ? 42 : 60;
     public decimal GeolocalisationPrice { get; set; } = 19.90m;
     public decimal PurchaseOptionPrice { get; set; }
 
@@ -59,7 +62,7 @@ public class Trim
         return type switch
         {
             FuelType.Electric => "Energie",
-            FuelType.Petrol => "Essence",
+            FuelType.Essence => "Essence",
             FuelType.Hybrid or FuelType.PlugInHybrid or FuelType.LightHybrid => "Essence",
             FuelType.Diesel => "Diesel",
             FuelType.LPG => "LPG",

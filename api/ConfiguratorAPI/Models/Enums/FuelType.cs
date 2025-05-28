@@ -2,7 +2,7 @@ namespace ConfiguratorAPI.Models.Enums;
 
 public enum FuelType
 {
-    Petrol,
+    Essence,
     Diesel,
     Hybrid,
     LPG,

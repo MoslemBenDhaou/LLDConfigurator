@@ -11,9 +11,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowNextJsApp", policy =>
+    options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("http://localhost:3000")
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -23,8 +23,11 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<ConfiguratorDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Add memory cache
+builder.Services.AddMemoryCache();
+
 // Register application services
-builder.Services.AddScoped<IConfiguratorService, ConfiguratorService>();
+builder.Services.AddScoped<IVehicleService, VehicleService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -48,7 +51,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowNextJsApp");
+app.UseCors("AllowAll");
 app.UseAuthorization();
 app.MapControllers();
 

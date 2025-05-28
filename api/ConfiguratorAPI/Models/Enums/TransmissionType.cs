@@ -3,5 +3,5 @@ namespace ConfiguratorAPI.Models.Enums;
 public enum TransmissionType
 {
     Manual,
-    Automatic
+    Automatique
 }

@@ -1,12 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search } from "lucide-react"
 import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ConfiguratorData } from "../wizard"
-import { getBrands } from "@/data/offers"
+
+interface Brand {
+  code: string;
+  name: string;
+  imgUrl: string;
+  isActive: boolean;
+}
 
 interface BrandSelectionProps {
   data: ConfiguratorData
@@ -15,14 +21,37 @@ interface BrandSelectionProps {
 
 export function BrandSelection({ data, setData }: BrandSelectionProps) {
   const [searchTerm, setSearchTerm] = useState("")
+  const [brands, setBrands] = useState<Brand[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Get brands from the centralized data file
-  const brands = getBrands()
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
+        const response = await fetch(`${apiUrl}/api/Vehicles/brands`)
+        if (!response.ok) {
+          throw new Error('Failed to fetch brands')
+        }
+        const data = await response.json()
+        setBrands(data)
+      } catch (err) {
+        console.error('Error fetching brands:', err)
+        setError('Failed to load brands. Please try again later.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
 
-  const filteredBrands = brands.filter((brand) => brand.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    fetchBrands()
+  }, [])
 
-  const handleBrandSelect = (brandId: string) => {
-    setData({ ...data, brand: brandId, model: "", trim: "" })
+  const filteredBrands = brands
+    .filter(brand => brand.isActive)
+    .filter(brand => brand.name.toLowerCase().includes(searchTerm.toLowerCase()))
+
+  const handleBrandSelect = (brandCode: string) => {
+    setData({ ...data, brand: brandCode, model: "", trim: "" })
   }
 
   return (
@@ -40,24 +69,37 @@ export function BrandSelection({ data, setData }: BrandSelectionProps) {
         />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        {filteredBrands.map((brand) => (
-          <Card
-            key={brand.id}
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              data.brand === brand.id ? "border-[#4361ee] ring-2 ring-[#4361ee]" : ""
-            }`}
-            onClick={() => handleBrandSelect(brand.id)}
-          >
-            <CardContent className="flex flex-col items-center justify-center p-4">
-              <div className="relative h-16 w-16 mb-2">
-                <Image src={brand.logo || "/placeholder.svg"} alt={brand.name} fill className="object-contain" />
-              </div>
-              <span className="text-sm font-medium">{brand.name}</span>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="flex justify-center items-center h-40">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        </div>
+      ) : error ? (
+        <div className="text-red-500 text-center p-4">{error}</div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {filteredBrands.map((brand) => (
+            <Card
+              key={brand.code}
+              className={`cursor-pointer transition-all hover:shadow-md ${
+                data.brand === brand.code ? "border-[#4361ee] ring-2 ring-[#4361ee]" : ""
+              }`}
+              onClick={() => handleBrandSelect(brand.code)}
+            >
+              <CardContent className="flex flex-col items-center justify-center p-4">
+                <div className="relative h-16 w-16 mb-2">
+                  <Image
+                    src={brand.imgUrl}
+                    alt={brand.name}
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+                <span className="text-sm font-medium text-center">{brand.name}</span>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

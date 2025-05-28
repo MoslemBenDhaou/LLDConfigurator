@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Info } from "lucide-react"
-import { getTrims, getTrimPriceMatrix } from "@/data/offers"
+import { getTrimPriceMatrix } from "@/data/offers"
 import { getPriceFromMatrix } from "@/data/price-matrix"
 
 interface PaymentTermsProps {
@@ -15,18 +15,69 @@ interface PaymentTermsProps {
   setData: (data: ConfiguratorData) => void
 }
 
+interface Trim {
+  trimCode: string;
+  name: string;
+  modelCode: string;
+  fiscalPower: number;
+  seats: number;
+  cylinderCount: number;
+  horsePower: number;
+  fuelType: string;
+  transmission: string;
+  maxSpeedKph: number;
+  extendedCharacteristicsUrl?: string;
+  listPrice: number;
+  isActive: boolean;
+  fullInsurance0PercentPrice: number;
+  fullInsurance4PercentPrice: number;
+  maintenancePackagePrice: number;
+  vignettesPrice: number;
+  maxDurationMonths: number;
+  geolocalisationPrice: number;
+  purchaseOptionPrice: number;
+}
+
 export function PaymentTerms({ data, setData }: PaymentTermsProps) {
   const [monthlyPrices, setMonthlyPrices] = useState<Record<string, number>>({})
+  const [selectedTrim, setSelectedTrim] = useState<Trim | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   
-  // Get estimated vehicle list price based on trim
-  const getVehicleListPrice = () => {
-    // Get the selected trim
-    const trims = getTrims(data.brand, data.model)
-    const selectedTrim = trims.find(trim => trim.id === data.trim)
+  // Fetch the selected trim from the API
+  useEffect(() => {
+    if (!data.brand || !data.model || !data.trim) return
     
+    const fetchTrim = async () => {
+      try {
+        setIsLoading(true)
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
+        const response = await fetch(`${apiUrl}/api/Vehicles/brands/${data.brand}/models/${data.model}/trims`)
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch trims')
+        }
+        
+        const trimsData = await response.json()
+        const trim = trimsData.find((t: Trim) => t.trimCode === data.trim)
+        
+        if (trim) {
+          setSelectedTrim(trim)
+        }
+      } catch (err) {
+        console.error('Error fetching trim:', err)
+        setError('Failed to load trim data. Please try again later.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    fetchTrim()
+  }, [data.brand, data.model, data.trim])
+  
+  // Get vehicle list price from the selected trim
+  const getVehicleListPrice = () => {
     if (!selectedTrim) return 32000 // Default value if no trim is selected
-
-    // Use the listPrice property from the trim data
     return selectedTrim.listPrice
   }
 
@@ -34,58 +85,39 @@ export function PaymentTerms({ data, setData }: PaymentTermsProps) {
 
   // Load price matrix and calculate prices for all advance options
   useEffect(() => {
-    if (!data.trim) return
-
-    // Get the selected trim
-    const trims = getTrims(data.brand, data.model)
-    const selectedTrim = trims.find(trim => trim.id === data.trim)
-    
-    if (!selectedTrim) return
-
-    // Get the price matrix for the selected trim
-    const priceMatrix = getTrimPriceMatrix(data.brand, data.model, data.trim)
-    
-    // Update the trim's price matrix if it's empty
-    if (selectedTrim.priceMatrix.length === 0 && priceMatrix.length > 0) {
-      selectedTrim.priceMatrix = priceMatrix
-    }
+    if (!data.trim || !selectedTrim) return
     
     // Calculate monthly prices for all advance options
     const prices: Record<string, number> = {}
     
     // Calculate for each advance percentage option
     for (const option of [0, 10, 20, 30]) {
-      if (priceMatrix.length > 0) {
-        // Use the price matrix to get the price
-        prices[option] = getPriceFromMatrix(priceMatrix, data.duration, data.kilometers, option)
-      } else {
-        // Fallback calculation if no price matrix is available
-        const basePricePerMonth = selectedTrim.price
+      // Fallback calculation if no price matrix is available
+      // Base financing amount after first rate is applied
+      const financingAmount = vehicleListPrice * (1 - option / 100)
 
-        // Base financing amount after first rate is applied
-        const financingAmount = vehicleListPrice * (1 - option / 100)
+      // Calculate monthly payment based on financing amount and duration
+      const baseMonthlyPayment = financingAmount / data.duration
 
-        // Calculate monthly payment based on financing amount and duration
-        const baseMonthlyPayment = financingAmount / data.duration
+      // Apply other adjustments
+      const durationDiscount = Math.min(20, (data.duration - 12) * 0.4)
+      const adjustedMonthlyPayment = baseMonthlyPayment * (1 - durationDiscount / 100)
 
-        // Apply other adjustments
-        const durationDiscount = Math.min(20, (data.duration - 12) * 0.4)
-        const adjustedMonthlyPayment = baseMonthlyPayment * (1 - durationDiscount / 100)
-
-        prices[option] = Math.round(adjustedMonthlyPayment)
-      }
+      prices[option] = Math.round(adjustedMonthlyPayment)
     }
     
     setMonthlyPrices(prices)
-  }, [data.brand, data.model, data.trim, data.duration, data.kilometers, vehicleListPrice])
+  }, [data.duration, data.kilometers, vehicleListPrice, selectedTrim, data.trim])
 
   const handleFirstRateChange = (value: string) => {
     setData({ ...data, firstRatePercentage: Number.parseInt(value) })
   }
 
-  // Calculate first rate amount based on percentage
+  // Calculate first rate amount based on percentage and round up to nearest 100
   const getFirstRateAmount = (percentage: number) => {
-    return Math.round((percentage / 100) * vehicleListPrice)
+    const amount = (percentage / 100) * vehicleListPrice
+    // Round up to the nearest 100
+    return Math.ceil(amount / 100) * 100
   }
 
   // Get monthly price based on first rate percentage
@@ -104,6 +136,18 @@ export function PaymentTerms({ data, setData }: PaymentTermsProps) {
     { value: "20", label: "Apport initial de 20%", description: "Réduisez davantage vos mensualités" },
     { value: "30", label: "Apport initial de 30%", description: "Réduisez considérablement vos mensualités" },
   ]
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-40">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return <div className="text-red-500 text-center p-4">{error}</div>
+  }
 
   return (
     <div className="space-y-6">
